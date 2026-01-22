@@ -193,40 +193,50 @@ class RetrievalSystem:
 
     def retrieve(self, processed_query: Dict[str, Any],
                 options: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
-        """Main retrieval method combining graph and vector search"""
+        """
+        Main retrieval method combining graph and vector search.
+        Implements SIGIR '24 Scoring (STi): Sum contributions from nodes matching query categories.
+        """
         options = options or {}
         max_sources = options.get('max_sources', 10)
-        include_similar = options.get('include_similar', True)
         confidence_threshold = options.get('confidence_threshold', 0.5)
 
-        entities = processed_query.get('entities', {})
-        intent = processed_query.get('intent', 'general_inquiry')
+        section_value_map = processed_query.get('entities', {})
         original_query = processed_query.get('original_query', '')
 
-        logger.info(f"Retrieving for intent: {intent}, entities: {len(entities)}")
+        # 1. EBR-based Ticket Identification (SIGIR '24 Method)
+        # Calculate score STi for each ticket by summing similarities of its nodes to query entities
+        ticket_scores = {} # Map ticket_id -> score
+        ticket_metadata = {} # Map ticket_id -> ticket data
 
-        # Retrieve from both sources
-        graph_results = self.retrieve_from_graph(entities, intent)
-        vector_results = self.retrieve_from_vectors(original_query, entities)
+        for section, value in section_value_map.items():
+            if section == 'context': continue
+            
+            # Retrieve vector candidates for this specific section-value pair
+            node_candidates = self.retrieve_from_vectors(value, {section: [value]}, limit=5)
+            
+            for node in node_candidates:
+                tid = node['ticket_id']
+                score = node['score']
+                
+                # SIGIR '24: STi = sum over (k,v) in P [ sum over n in Ti [ I(n.sec=k) * cos(v,n) ] ]
+                ticket_scores[tid] = ticket_scores.get(tid, 0) + score
+                if tid not in ticket_metadata:
+                    ticket_metadata[tid] = node
 
-        # Combine and deduplicate results
-        all_results = graph_results + vector_results
+        # 2. Convert to list and sort by STi score
+        ranked_tickets = []
+        for tid, score in ticket_scores.items():
+            if score >= confidence_threshold:
+                meta = ticket_metadata[tid]
+                meta['score'] = score
+                meta['source'] = 'sti_ranked_graph'
+                ranked_tickets.append(meta)
 
-        # Remove duplicates based on ticket_id and node_type
-        seen = set()
-        unique_results = []
-        for result in all_results:
-            key = (result.get('ticket_id', ''), result.get('node_type', ''), result.get('text', '')[:100])
-            if key not in seen and result.get('score', 0) >= confidence_threshold:
-                seen.add(key)
-                unique_results.append(result)
+        ranked_tickets.sort(key=lambda x: x['score'], reverse=True)
+        final_results = ranked_tickets[:max_sources]
 
-        # Sort by score and limit results
-        unique_results.sort(key=lambda x: x.get('score', 0), reverse=True)
-        final_results = unique_results[:max_sources]
-
-        logger.info(f"Retrieved {len(final_results)} sources from {len(graph_results)} graph + {len(vector_results)} vector results")
-
+        logger.info(f"Retrieved {len(final_results)} tickets using SIGIR '24 STi scoring.")
         return final_results
 
     def get_stats(self) -> Dict[str, int]:

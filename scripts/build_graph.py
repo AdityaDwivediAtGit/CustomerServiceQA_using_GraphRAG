@@ -130,60 +130,52 @@ class GraphBuilder:
                     tag=tag
                 )
 
-    def create_inter_issue_connections(self, all_tickets: List[Dict[str, Any]]) -> None:
-        """Create connections between different tickets."""
+    def create_inter_issue_connections(self, all_tickets: List[Dict[str, Any]], threshold: float = 0.85) -> None:
+        """
+        Create connections between different tickets.
+        Implements SIGIR '24 Implicit Connections (Eimp) and Explicit Links (Eexp).
+        """
 
         logger.info("Creating inter-issue connections...")
 
+        # 1. Generate embeddings for all ticket titles for Eimp (Implicit connections)
+        titles = [t.get('title', '') for t in all_tickets]
+        logger.info(f"Generating embeddings for {len(titles)} titles...")
+        
+        embeddings = []
+        for title in titles:
+            try:
+                emb = ollama.embeddings(
+                    model=os.getenv("EMBEDDING_MODEL", "nomic-embed-text"),
+                    prompt=title
+                )['embedding']
+                embeddings.append(emb)
+            except Exception as e:
+                logger.error(f"Failed to generate title embedding: {str(e)}")
+                embeddings.append(None)
+
         with self.driver.session() as session:
-            # Create SIMILAR_TO relationships based on shared entities/tags
-            for i, ticket1 in enumerate(all_tickets):
-                ticket1_id = ticket1['ticket_id']
-                ticket1_entities = set()
-                ticket1_tags = set(ticket1.get('tags', []))
+            # 2. SIGIR '24: Implicit Connections (Eimp) based on title similarity
+            import numpy as np
+            def cosine_sim(a, b):
+                if a is None or b is None: return 0
+                return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
-                # Collect entities
-                entities = ticket1.get('entities', {})
-                for entity_list in entities.values():
-                    ticket1_entities.update([e.lower() for e in entity_list])
-
-                for j, ticket2 in enumerate(all_tickets):
-                    if i >= j:  # Avoid duplicates and self-connections
-                        continue
-
-                    ticket2_id = ticket2['ticket_id']
-                    ticket2_entities = set()
-                    ticket2_tags = set(ticket2.get('tags', []))
-
-                    # Collect entities for ticket2
-                    entities2 = ticket2.get('entities', {})
-                    for entity_list in entities2.values():
-                        ticket2_entities.update([e.lower() for e in entity_list])
-
-                    # Calculate similarity
-                    entity_overlap = len(ticket1_entities & ticket2_entities)
-                    tag_overlap = len(ticket1_tags & ticket2_tags)
-
-                    # Create relationships if there's overlap
-                    if entity_overlap > 0:
+            for i in range(len(all_tickets)):
+                for j in range(i + 1, len(all_tickets)):
+                    sim = cosine_sim(embeddings[i], embeddings[j])
+                    if sim >= threshold:
                         session.run("""
                             MATCH (i1:Issue {id: $id1}), (i2:Issue {id: $id2})
-                            CREATE (i1)-[:SIMILAR_TO {weight: $weight, type: 'entity_overlap'}]->(i2)
+                            MERGE (i1)-[:SIMILAR_TO {weight: $weight, type: 'semantic_title'}]-(i2)
                             """,
-                            id1=ticket1_id,
-                            id2=ticket2_id,
-                            weight=min(entity_overlap * 0.1, 1.0)
+                            id1=all_tickets[i]['ticket_id'],
+                            id2=all_tickets[j]['ticket_id'],
+                            weight=float(sim)
                         )
 
-                    if tag_overlap > 0:
-                        session.run("""
-                            MATCH (i1:Issue {id: $id1}), (i2:Issue {id: $id2})
-                            CREATE (i1)-[:RELATED_TO {weight: $weight, type: 'tag_overlap'}]->(i2)
-                            """,
-                            id1=ticket1_id,
-                            id2=ticket2_id,
-                            weight=min(tag_overlap * 0.2, 1.0)
-                        )
+            # 3. SIGIR '24: Explicit Connections (Eexp) 
+            # (Handled by REFERENCES and existing tag logic below)
 
             # Create REFERENCES relationships based on explicit mentions
             for ticket in all_tickets:

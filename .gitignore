@@ -98,3 +98,8 @@ docs/_build/
 models/
 *.bin
 *.gguf
+
+
+
+# others by me
+/data/raw

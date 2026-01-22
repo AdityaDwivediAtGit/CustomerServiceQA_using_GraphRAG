@@ -3,33 +3,25 @@
 ## Purpose and Scope
 This document provides a high-level overview of the Retrieval-Augmented Generation with Knowledge Graphs (RAG-KG) Customer Service QA System architecture. The system is designed to answer customer service questions by leveraging a dual-level knowledge graph constructed from historical support tickets, combined with vector-based retrieval and local OLLAMA models for generation. The architecture emphasizes offline operation, local models, and optimization for 16GB RAM constraints.
 
-## System Components
+## System Components (SIGIR '24 Alignment)
 
-### 1. Knowledge Graph Construction Pipeline
-- **Intra-issue Trees**: Hierarchical representation of individual ticket content (e.g., issue description, comments, resolutions)
-- **Inter-issue Graph**: Connections between tickets based on explicit (e.g., references) and implicit (e.g., semantic similarity) relationships
-- **Hybrid Parsing**: Rule-based extraction for structured data + LLM-based parsing for unstructured content
-- **Node Embeddings**: Vector representations of graph nodes for similarity-based retrieval
+### 1. Dual-Level Knowledge Graph
+- **Intra-issue Trees ($T_i$):** Hierarchical representation of individual ticket sections (status, priority, root cause, etc).
+- **Inter-issue Graph ($G$):** 
+    - **Explicit Connections ($E_{exp}$):** Reference links or clones.
+    - **Implicit Connections ($E_{imp}$):** Semantic title similarity using cosine distance.
 
-### 2. Query Processing System
-- **Entity Identification**: Extract key entities from user queries using OLLAMA LLM
-- **Intent Detection**: Classify query intent (e.g., troubleshooting, feature request)
-- **Subgraph Retrieval**: Retrieve relevant graph subgraphs via vector similarity and graph traversal
-- **Cypher Query Generation**: Generate graph database queries for precise traversal
-- **Answer Generation**: Synthesize responses using retrieved context, with fallback mechanisms
-- **Orchestration (LangGraph)**: Multi-step logic and stateful query flows
-- **Visual Flow Management (LangFlow)**: UI-based design and testing of RAG pipelines
-- **Observability (LangSmith)**: Tracking and evaluating LLM performance (offline mode limited)
+### 2. Retrieval & Question Answering
+- **Entity Extraction:** LLM-based mapping of query segments to graph sections (Section -> Value).
+- **$S_{T_i}$ Scoring Logic:** Accurate ranking by summing node-level similarities for a given ticket.
+- **LLM-driven Subgraph Extraction:** Translating natural language queries into Cypher for retrieved subgraphs.
 
 ### 3. Data Storage Layer
-- **Graph Database**: Neo4j Community Edition for storing ticket trees and connections
-- **Vector Database**: Qdrant Community (Docker) for embedding storage and similarity search
-- **Document Store**: Local file system or SQLite for raw ticket data
+- **Graph Database:** Neo4j (Stores $T_i$ and $G$).
+- **Vector Database:** Qdrant (Stores embeddings for node-level lookup).
 
 ### 4. Model Layer
-- **LLM**: OLLAMA-hosted models (e.g., llama2:7b-chat-q4_0 for memory efficiency)
-- **Embedding Model**: OLLAMA-hosted embedding models (e.g., nomic-embed-text)
-- **Local Processing**: All inference runs locally, no cloud dependencies
+- **LLM/Embedding:** OLLAMA-hosted local models (e.g., Mistral, Llama 2).
 
 ## Data Flow
 

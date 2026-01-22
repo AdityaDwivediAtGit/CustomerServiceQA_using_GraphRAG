@@ -85,21 +85,19 @@ class QueryProcessor:
 
         return 'general_inquiry'  # Default intent
 
-    def extract_entities_llm(self, text: str) -> Dict[str, List[str]]:
-        """Extract entities using LLM"""
+    def extract_entities_llm(self, text: str) -> Dict[str, str]:
+        """Extract entities using LLM as a mapping of Section -> Value (SIGIR '24)"""
         try:
             prompt = f"""
-Analyze this customer service query and extract key entities. Return JSON format only.
+Analyze this customer service query and extract key entities as a mapping of section to value. 
+Sections should align with common graph fields: 'issue summary', 'issue description', 'product', 'priority', 'root cause', 'steps to reproduce'.
+
+Return JSON format only.
 
 Query: {text}
 
-Extract:
-1. Products/platforms mentioned
-2. Actions being performed
-3. Error types or issues
-4. Specific features or components
-
-Format: {{"products": [], "actions": [], "errors": [], "features": []}}
+Format: {{"section_name": "extracted_value"}}
+Example: {{"issue summary": "csv upload error", "priority": "high"}}
 """
 
             response = ollama.chat(

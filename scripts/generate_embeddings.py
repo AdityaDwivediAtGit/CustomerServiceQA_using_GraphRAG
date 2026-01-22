@@ -280,8 +280,8 @@ def main():
 
     logger.info(f"Loaded {len(all_tickets)} tickets")
 
-    # Initialize Qdrant client
-    qdrant_client = QdrantClient(url=args.qdrant_url)
+    # Initialize Qdrant client with longer timeout
+    qdrant_client = QdrantClient(url=args.qdrant_url, timeout=60)
 
     # Initialize embedding generator
     generator = EmbeddingGenerator(args.model, qdrant_client, args.collection)
