@@ -214,6 +214,12 @@ black .
 flake8 .
 ```
 
+#### By me
+```pwsh
+rag-kg-env/Scripts/activate
+python -m app.main
+```
+
 ### Code Standards
 - Type hints for all functions
 - Comprehensive docstrings

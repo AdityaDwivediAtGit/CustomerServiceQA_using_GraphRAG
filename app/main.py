@@ -20,7 +20,7 @@ if sys.platform == 'win32':
     import asyncio
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-# Import our custom modules
+# Import our custom modules (commented out for testing)
 from app.query_processor import QueryProcessor
 from app.retrieval_system import RetrievalSystem
 from app.answer_generator import AnswerGenerator
@@ -42,7 +42,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Add CORS middleware
+# Add CORS middleware (temporarily disabled for debugging)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -150,7 +150,7 @@ async def process_query(request: QueryRequest):
             for source in sources
         ]
 
-        logger.info(".2f")
+        logger.info(f"Query processed in {processing_time:.2f}s")
 
         return QueryResponse(
             answer=answer,
@@ -213,9 +213,8 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("Shutting down RAG-KG API server...")
     try:
-        if retrieval_system:
-            retrieval_system.close()
-            logger.info("Connections closed")
+        retrieval_system.close()
+        logger.info("Connections closed")
     except Exception as e:
         logger.error(f"Shutdown error: {str(e)}")
 
