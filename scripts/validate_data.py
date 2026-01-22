@@ -97,7 +97,7 @@ class DataValidator:
         try:
             collection_info = self.qdrant_client.get_collection(self.collection_name)
             results['collection_exists'] = True
-            results['vector_count'] = collection_info.vectors_count
+            results['vector_count'] = collection_info.points_count
 
             # Get sample points to check payload structure
             if results['vector_count'] > 0:
