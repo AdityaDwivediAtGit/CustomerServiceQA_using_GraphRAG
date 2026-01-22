@@ -203,11 +203,15 @@ class RetrievalSystem:
 
         section_value_map = processed_query.get('entities', {})
         original_query = processed_query.get('original_query', '')
+        
+        # Determine number of sources from options
+        k = options.get('max_sources', 5)
 
         # 1. EBR-based Ticket Identification (SIGIR '24 Method)
         # Calculate score STi for each ticket by summing similarities of its nodes to query entities
         ticket_scores = {} # Map ticket_id -> score
-        ticket_metadata = {} # Map ticket_id -> ticket data
+        # Store all contributing nodes for each ticket
+        ticket_contributions = {} # Map ticket_id -> List[node]
 
         for section, value in section_value_map.items():
             if section == 'context': continue
@@ -221,23 +225,102 @@ class RetrievalSystem:
                 
                 # SIGIR '24: STi = sum over (k,v) in P [ sum over n in Ti [ I(n.sec=k) * cos(v,n) ] ]
                 ticket_scores[tid] = ticket_scores.get(tid, 0) + score
-                if tid not in ticket_metadata:
-                    ticket_metadata[tid] = node
+                if tid not in ticket_contributions:
+                    ticket_contributions[tid] = []
+                ticket_contributions[tid].append(node)
 
         # 2. Convert to list and sort by STi score
         ranked_tickets = []
         for tid, score in ticket_scores.items():
             if score >= confidence_threshold:
-                meta = ticket_metadata[tid]
-                meta['score'] = score
-                meta['source'] = 'sti_ranked_graph'
-                ranked_tickets.append(meta)
+                # Use the contribution info to build a candidate record
+                ranked_tickets.append({
+                    'ticket_id': tid,
+                    'score': score,
+                    'contributions': ticket_contributions[tid]
+                })
 
         ranked_tickets.sort(key=lambda x: x['score'], reverse=True)
-        final_results = ranked_tickets[:max_sources]
+        top_k_candidates = ranked_tickets[:k]
 
-        logger.info(f"Retrieved {len(final_results)} tickets using SIGIR '24 STi scoring.")
+        # 3. LLM-driven Subgraph Extraction (SIGIR '24 Step 2.1)
+        # For each top candidate, extract most relevant subgraph
+        final_results = []
+        for candidate in top_k_candidates:
+            subgraph = self._extract_subgraph(candidate['ticket_id'], original_query)
+            if subgraph:
+                # Combine subgraph nodes into results
+                for node in subgraph:
+                    node['score'] = candidate['score'] # Inherit ticket score
+                    node['source'] = 'sigir24_subgraph'
+                    final_results.append(node)
+            else:
+                # Fallback: use the contributions if subgraph extraction fails
+                for node in candidate['contributions']:
+                    node['source'] = 'sti_contribution_fallback'
+                    final_results.append(node)
+
+        logger.info(f"Retrieved {len(final_results)} nodes from {len(top_k_candidates)} tickets using SIGIR '24 pipeline.")
         return final_results
+
+    def _extract_subgraph(self, ticket_id: str, query: str) -> List[Dict[str, Any]]:
+        """
+        Use LLM to generate a Cypher query to extract a relevant subgraph from an intra-issue tree.
+        SIGIR '24 Step 2.1 implementation.
+        """
+        if not self.neo4j_driver:
+            return []
+
+        try:
+            # 1. Ask LLM to generate Cypher query
+            prompt = f"""You are a Neo4j Cypher expert.
+User Query: "{query}"
+Target Ticket ID: "{ticket_id}"
+
+The graph structure for this ticket is a tree with the Issue node at the root.
+Nodes types: Issue, Description, Comment, Resolution, Entity, Tag.
+Relationships: HAS_DESCRIPTION, HAS_COMMENT, HAS_RESOLUTION, MENTIONS_ENTITY, HAS_TAG.
+
+Generate a Cypher query that finds the most relevant nodes to the user query for this specific ticket.
+The query MUST start with: MATCH (i:Issue {{id: "{ticket_id}"}})
+The query should return nodes: i, and any related nodes (d, c, r, e, t).
+Example: MATCH (i:Issue {{id: "{ticket_id}"}})-[:HAS_DESCRIPTION]->(d) RETURN d.text as text, labels(d)[0] as type
+
+Return ONLY the Cypher query. No explanation."""
+
+            response = ollama.chat(
+                model=os.getenv("LLM_MODEL", "llama2:7b-chat-q4_0"),
+                messages=[{'role': 'user', 'content': prompt}]
+            )
+            
+            cypher = response['message']['content'].strip()
+            # Basic sanitization
+            cypher = cypher.replace('```cypher', '').replace('```', '').strip()
+            
+            if not cypher.upper().startswith("MATCH"):
+                logger.warning(f"Invalid Cypher generated: {cypher}")
+                return []
+
+            # 2. Execute the Cypher query
+            results = []
+            with self.neo4j_driver.session() as session:
+                result = session.run(cypher)
+                for record in result:
+                    # We expect keys like 'text', 'content', 'type' or whole nodes
+                    data = dict(record)
+                    # Standardize format for AnswerGenerator
+                    node_data = {
+                        'ticket_id': ticket_id,
+                        'text': data.get('text') or data.get('content') or str(data),
+                        'node_type': data.get('type') or 'SubNode'
+                    }
+                    results.append(node_data)
+            
+            return results
+
+        except Exception as e:
+            logger.error(f"Subgraph extraction failed for {ticket_id}: {str(e)}")
+            return []
 
     def get_stats(self) -> Dict[str, int]:
         """Get system statistics"""
