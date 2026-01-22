@@ -192,7 +192,7 @@ def main():
                        help="Input directory with raw tickets")
     parser.add_argument("--output_dir", type=str, default="data/processed",
                        help="Output directory for parsed tickets")
-    parser.add_argument("--model", type=str, default="mistral:7b-instruct-v0.1-q4_0",
+    parser.add_argument("--model", type=str, default="mistral:7b-instruct-q4_0",
                        help="OLLAMA model for LLM parsing")
     parser.add_argument("--max_workers", type=int, default=4,
                        help="Maximum parallel workers")

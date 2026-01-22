@@ -26,6 +26,7 @@ venv/
 env/
 ENV/
 .venv/
+rag-kg-env/
 .env
 .env.local
 .env.production
@@ -50,11 +51,14 @@ Thumbs.db
 logs/
 *.log
 
+# Docker
+.dockerignore
+
 # Data (uncomment if you want to ignore data directories)
 # data/
 # data/raw/
-# data/processed/
-# data/embeddings/
+data/processed/
+data/embeddings/
 
 # Cache
 .cache/

@@ -218,7 +218,7 @@ class GraphBuilder:
 
             for ticket in all_tickets:
                 ticket_id = ticket['ticket_id']
-                resolution_text = ticket.get('resolution', '').lower()
+                resolution_text = (ticket.get('resolution') or '').lower()
 
                 for rel_type, keywords in resolution_keywords.items():
                     if any(keyword in resolution_text for keyword in keywords):

@@ -98,7 +98,7 @@ class EmbeddingGenerator:
         issue_embedding = self.generate_text_embedding(issue_text)
         if issue_embedding:
             points.append(PointStruct(
-                id=f"{ticket_id}_issue",
+                id=hash(f"{ticket_id}_issue") % 2**63,  # Convert to positive integer
                 vector=issue_embedding,
                 payload={
                     'ticket_id': ticket_id,
@@ -114,7 +114,7 @@ class EmbeddingGenerator:
             desc_embedding = self.generate_text_embedding(desc_text)
             if desc_embedding:
                 points.append(PointStruct(
-                    id=f"{ticket_id}_desc",
+                    id=hash(f"{ticket_id}_desc") % 2**63,
                     vector=desc_embedding,
                     payload={
                         'ticket_id': ticket_id,
@@ -130,7 +130,7 @@ class EmbeddingGenerator:
             comment_embedding = self.generate_text_embedding(comment_text)
             if comment_embedding:
                 points.append(PointStruct(
-                    id=f"{ticket_id}_comment_{idx}",
+                    id=hash(f"{ticket_id}_comment_{idx}") % 2**63,
                     vector=comment_embedding,
                     payload={
                         'ticket_id': ticket_id,
@@ -148,7 +148,7 @@ class EmbeddingGenerator:
             res_embedding = self.generate_text_embedding(res_text)
             if res_embedding:
                 points.append(PointStruct(
-                    id=f"{ticket_id}_res",
+                    id=hash(f"{ticket_id}_res") % 2**63,
                     vector=res_embedding,
                     payload={
                         'ticket_id': ticket_id,
@@ -167,7 +167,7 @@ class EmbeddingGenerator:
                 entity_embedding = self.generate_text_embedding(entity_text)
                 if entity_embedding:
                     points.append(PointStruct(
-                        id=entity_id,
+                        id=hash(entity_id) % 2**63,
                         vector=entity_embedding,
                         payload={
                             'ticket_id': ticket_id,
@@ -186,7 +186,7 @@ class EmbeddingGenerator:
             tag_embedding = self.generate_text_embedding(tag_text)
             if tag_embedding:
                 points.append(PointStruct(
-                    id=tag_id,
+                    id=hash(tag_id) % 2**63,
                     vector=tag_embedding,
                     payload={
                         'ticket_id': ticket_id,

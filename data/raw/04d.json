@@ -1,0 +1,33 @@
+{
+  "ticket_id": "04d",
+  "title": "Feature not working with Mobile Website",
+  "description": "Multiple reports of feature not working in the mobile website. Need immediate attention.",
+  "product": "Mobile Website",
+  "status": "in_progress",
+  "priority": "high",
+  "created_date": "2024-09-21T00:00:00",
+  "updated_date": "2024-10-12T00:00:00",
+  "comments": [
+    {
+      "author": "user",
+      "text": "Issue resolved, thank you!",
+      "timestamp": "2024-10-05T00:00:00Z"
+    },
+    {
+      "author": "agent",
+      "text": "Urgent - production issue",
+      "timestamp": "2024-10-05T02:00:00Z"
+    },
+    {
+      "author": "user",
+      "text": "Still experiencing the problem",
+      "timestamp": "2024-10-05T04:00:00Z"
+    }
+  ],
+  "resolution": null,
+  "tags": [
+    "bug"
+  ],
+  "assignee": "agent_10",
+  "reporter": "user_94"
+}

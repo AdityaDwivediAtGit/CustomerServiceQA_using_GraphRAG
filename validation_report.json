@@ -1,0 +1,47 @@
+{
+  "timestamp": "1769091843.6873033",
+  "graph_validation": {
+    "node_counts": {
+      "Issue": 2,
+      "Description": 3,
+      "Comment": 9,
+      "Resolution": 0,
+      "Entity": 1,
+      "Tag": 1
+    },
+    "relationship_counts": {
+      "HAS_DESCRIPTION": 3,
+      "HAS_COMMENT": 9,
+      "HAS_RESOLUTION": 0,
+      "MENTIONS_ENTITY": 6,
+      "HAS_TAG": 3,
+      "SIMILAR_TO": 0,
+      "RELATED_TO": 0,
+      "REFERENCES": 0,
+      "DEPENDS_ON": 0
+    },
+    "issues": []
+  },
+  "embedding_validation": {
+    "collection_exists": false,
+    "vector_count": 0,
+    "payload_fields": [],
+    "issues": [
+      "Qdrant validation error: 3 validation errors for ParsingModel[InlineResponse2005] (for parse_as_type)\nobj.result.vectors_count\n  Field required [type=missing, input_value={'status': 'green', 'opti...}, 'payload_schema': {}}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.5/v/missing\nobj.result.config.optimizer_config.max_optimization_threads\n  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]\n    For further information visit https://errors.pydantic.dev/2.5/v/int_type\nobj.result.config.wal_config.wal_retain_closed\n  Extra inputs are not permitted [type=extra_forbidden, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.5/v/extra_forbidden"
+    ]
+  },
+  "consistency_validation": {
+    "processed_files": 1,
+    "graph_coverage": 1.0,
+    "embedding_coverage": 0,
+    "issues": []
+  },
+  "overall_status": "WARN",
+  "summary": {
+    "total_nodes": 16,
+    "total_relationships": 21,
+    "total_vectors": 0,
+    "graph_issues": 0,
+    "embedding_issues": 1
+  }
+}
