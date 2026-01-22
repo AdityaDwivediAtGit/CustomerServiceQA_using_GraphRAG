@@ -8,6 +8,7 @@ This guide provides step-by-step instructions for setting up the complete enviro
 - At least 16GB RAM (32GB recommended for optimal performance)
 - 50GB free disk space
 - Administrator privileges for installations
+- For offline installs: See [Migration Guide](MIGRATION_GUIDE.md)
 
 ## Step-by-Step Installation
 
@@ -38,7 +39,7 @@ ollama --version
 # EXPECTED OUTPUT: Download progress, model ready
 # MEMORY USAGE: ~200MB when loaded
 
-# COMMAND: ollama pull mistral:7b-instruct-v0.1-q4_0
+# COMMAND: ollama pull mistral:7b-instruct-q4_0
 # PURPOSE: Alternative LLM for parsing tasks (smaller memory footprint)
 # EXPECTED OUTPUT: Download progress
 # MEMORY USAGE: ~4GB when loaded
@@ -47,7 +48,7 @@ ollama --version
 #### Verify Models
 ```
 ollama list
-# EXPECTED OUTPUT: List of installed models including llama2:7b-chat-q4_0, nomic-embed-text, mistral:7b-instruct-v0.1-q4_0
+# EXPECTED OUTPUT: List of installed models including llama2:7b-chat-q4_0, nomic-embed-text, mistral:7b-instruct-q4_0
 ```
 
 ### 2. Python Environment Setup
@@ -146,7 +147,7 @@ NEO4J_PASSWORD=your_password_here
 QDRANT_URL=http://localhost:6333
 EMBEDDING_MODEL=nomic-embed-text
 LLM_MODEL=llama2:7b-chat-q4_0
-PARSING_MODEL=mistral:7b-instruct-v0.1-q4_0
+PARSING_MODEL=mistral:7b-instruct-q4_0
 ```
 
 #### Load Environment Variables
@@ -193,7 +194,8 @@ dbms.memory.heap.max_size=4G
 #### Python Dependency Conflicts
 ```
 # Create fresh venv
-# Install in order: pip install langchain neo4j qdrant-client ollama python-dotenv
+# Install core: pip install langchain langchain-community langchain-core neo4j qdrant-client ollama python-dotenv
+# Install flow/graph: pip install langgraph langflow langsmith
 ```
 
 ## Post-Installation Steps

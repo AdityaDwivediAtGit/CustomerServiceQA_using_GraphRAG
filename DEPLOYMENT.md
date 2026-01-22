@@ -11,8 +11,8 @@ Best for development, testing, and small-scale production.
 ### Option 2: Docker Container Deployment
 Recommended for production with isolation and scalability.
 
-### Option 3: Hybrid Deployment
-Databases in Docker, application services local.
+### Option 4: Offline Migration Deployment
+Automated transfer to air-gapped systems using the [Migration Guide](MIGRATION_GUIDE.md).
 
 ## Local Deployment
 

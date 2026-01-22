@@ -84,27 +84,19 @@ Process a customer service question and return an answer with sources.
 }
 ```
 
-### Health Check Endpoint
+### Health and Test Endpoints
 
 #### GET /health
 Check system health and component status.
 
+#### GET /test
+Simple diagnostic endpoint to verify the API server is reachable.
+
 **Response:**
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "components": {
-    "ollama": "healthy",
-    "neo4j": "healthy",
-    "qdrant": "healthy",
-    "api": "healthy"
-  },
-  "memory_usage": {
-    "total": "12.5GB",
-    "available": "3.5GB",
-    "used_percent": 78.1
-  }
+  "status": "ok",
+  "message": "Test endpoint working"
 }
 ```
 

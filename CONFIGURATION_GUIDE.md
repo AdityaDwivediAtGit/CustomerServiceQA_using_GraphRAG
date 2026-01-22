@@ -32,7 +32,7 @@ ollama:
     context_window: 4096
 
   # LLM for parsing tasks
-  parsing_model: "mistral:7b-instruct-v0.1-q4_0"
+  parsing_model: "mistral:7b-instruct-q4_0"
   parsing_params:
     temperature: 0.0
     top_p: 0.95
@@ -54,7 +54,7 @@ memory:
 
 ### Memory Usage Estimates
 - **llama2:7b-chat-q4_0**: ~4GB RAM when loaded
-- **mistral:7b-instruct-v0.1-q4_0**: ~4GB RAM when loaded
+- **mistral:7b-instruct-q4_0**: ~4GB RAM when loaded
 - **nomic-embed-text**: ~200MB RAM when loaded
 - **Concurrent loading**: Avoid loading multiple LLMs simultaneously
 
@@ -241,7 +241,7 @@ api:
 query_processing:
   # Entity extraction
   entity_extraction:
-    model: "mistral:7b-instruct-v0.1-q4_0"
+    model: "mistral:7b-instruct-q4_0"
     max_entities: 5
     confidence_threshold: 0.6
 
@@ -323,7 +323,7 @@ COLLECTION_NAME=tickets
 
 # Model settings
 LLM_MODEL=llama2:7b-chat-q4_0
-PARSING_MODEL=mistral:7b-instruct-v0.1-q4_0
+PARSING_MODEL=mistral:7b-instruct-q4_0
 EMBEDDING_MODEL=nomic-embed-text
 
 # API settings

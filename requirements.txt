@@ -18,3 +18,6 @@ pydantic==2.5.2
 loguru==0.7.2
 psutil==5.9.7
 pyyaml==6.0.1
+langgraph
+langflow
+langsmith

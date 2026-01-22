@@ -17,6 +17,9 @@ This document provides a high-level overview of the Retrieval-Augmented Generati
 - **Subgraph Retrieval**: Retrieve relevant graph subgraphs via vector similarity and graph traversal
 - **Cypher Query Generation**: Generate graph database queries for precise traversal
 - **Answer Generation**: Synthesize responses using retrieved context, with fallback mechanisms
+- **Orchestration (LangGraph)**: Multi-step logic and stateful query flows
+- **Visual Flow Management (LangFlow)**: UI-based design and testing of RAG pipelines
+- **Observability (LangSmith)**: Tracking and evaluating LLM performance (offline mode limited)
 
 ### 3. Data Storage Layer
 - **Graph Database**: Neo4j Community Edition for storing ticket trees and connections
@@ -60,6 +63,7 @@ This document provides a high-level overview of the Retrieval-Augmented Generati
 - Resource usage monitoring (CPU, RAM, disk)
 - Query performance metrics
 - Error tracking and alerting
+- **Automated Migration**: Unified bundling for offline deployment and disaster recovery
 
 ## Expected Performance Baselines
 - Query response time: <5 seconds

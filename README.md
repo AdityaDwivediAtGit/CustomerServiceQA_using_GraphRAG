@@ -65,6 +65,7 @@ curl -X POST http://localhost:8000/api/v1/query \
 
 ### Setup & Installation
 - [Installation Guide](INSTALLATION.md) - Complete setup instructions
+- [Migration Guide](MIGRATION_GUIDE.md) - Offline transfer instructions
 - [Configuration Guide](CONFIGURATION_GUIDE.md) - System configuration
 - [Deployment Guide](DEPLOYMENT.md) - Production deployment
 

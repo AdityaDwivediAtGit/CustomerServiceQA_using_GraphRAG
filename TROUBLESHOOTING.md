@@ -126,6 +126,28 @@ curl -X DELETE http://localhost:6333/collections/tickets
 
 # Recreate with correct parameters
 python scripts/generate_embeddings.py --recreate-collection
+
+#### Pydantic Validation Errors (Qdrant Client)
+```
+SYMPTOMS: pydantic_core._pydantic_core.ValidationError: 3 validation errors for ParsingModel[InlineResponse2005]
+ERROR: extra="forbid" context={} input_type=dict
+CAUSE: Incompatibility between Qdrant server version and qdrant-client version.
+SOLUTION:
+# Upgrade qdrant-client to match server schema
+pip install qdrant-client==1.12.0
+
+# Verify with:
+python -c "from qdrant_client import QdrantClient; print(QdrantClient(url='http://localhost:6333').get_collection('tickets'))"
+```
+
+#### TypeError in validate_data.py
+```
+SYMPTOMS: TypeError: '>' not supported between instances of 'NoneType' and 'int'
+CAUSE: Accessing collection_info.vectors_count which is None in newer client versions.
+SOLUTION:
+# Update scripts/validate_data.py to use points_count:
+results['vector_count'] = collection_info.points_count
+```
 ```
 
 ### Python Environment Issues
@@ -501,6 +523,29 @@ python scripts/generate_sample_data.py --num_tickets 100
 python scripts/parse_tickets.py --method hybrid
 python scripts/build_graph.py --phase full
 python scripts/generate_embeddings.py
+
+## Offline Migration Issues
+
+### Bundle Restoration Fails
+```
+SYMPTOMS: Manifest directory not found
+SOLUTION: Ensure you copied the 'manifest' folder alongside the project root to the destination machine.
+```
+
+### Docker Volume Restore Permission Error
+```
+SYMPTOMS: Permission denied when untarring to volume
+SOLUTION: Ensure Docker Desktop is running. Try running PowerShell as Administrator.
+```
+
+### OLLAMA Models Missing After Restore
+```
+SYMPTOMS: ollama list is empty
+SOLUTION:
+# Check if volume was created: docker volume ls
+# Ensure restoring to the correct volume name: ollama
+# Verify mount point in bundle_migration.ps1
+```
 ```
 
 ## Getting Help
