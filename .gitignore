@@ -1,0 +1,96 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Data (uncomment if you want to ignore data directories)
+# data/
+# data/raw/
+# data/processed/
+# data/embeddings/
+
+# Cache
+.cache/
+.cache/
+*.cache
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database files (local development)
+neo4j/
+qdrant/
+*.db
+*.sqlite
+
+# Backups (comment out if you want to version control backups)
+backups/
+
+# Configuration (contains sensitive data)
+config/local/
+*.local
+
+# Test files
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Documentation build
+docs/_build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Model files (large files)
+models/
+*.bin
+*.gguf
