@@ -183,40 +183,40 @@ async def get_stats():
         logger.error(f"Stats retrieval failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Stats retrieval failed")
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize components on startup"""
-    global query_processor, retrieval_system, answer_generator
-    logger.info("Starting RAG-KG API server...")
-    try:
-        # Initialize components
-        logger.info("Initializing query processor...")
-        query_processor = QueryProcessor()
-        logger.info("Query processor initialized")
+# @app.on_event("startup")
+# async def startup_event():
+#     """Initialize components on startup"""
+#     global query_processor, retrieval_system, answer_generator
+#     logger.info("Starting RAG-KG API server...")
+#     try:
+#         # Initialize components
+#         logger.info("Initializing query processor...")
+#         query_processor = QueryProcessor()
+#         logger.info("Query processor initialized")
 
-        logger.info("Initializing retrieval system...")
-        retrieval_system = RetrievalSystem()
-        retrieval_system.initialize()
-        logger.info("Retrieval system initialized")
+#         logger.info("Initializing retrieval system...")
+#         retrieval_system = RetrievalSystem()
+#         retrieval_system.initialize()
+#         logger.info("Retrieval system initialized")
 
-        logger.info("Initializing answer generator...")
-        answer_generator = AnswerGenerator()
-        logger.info("Answer generator initialized")
+#         logger.info("Initializing answer generator...")
+#         answer_generator = AnswerGenerator()
+#         logger.info("Answer generator initialized")
 
-        logger.info("All components initialized successfully")
-    except Exception as e:
-        logger.error(f"Startup failed: {str(e)}", exc_info=True)
-        raise
+#         logger.info("All components initialized successfully")
+#     except Exception as e:
+#         logger.error(f"Startup failed: {str(e)}", exc_info=True)
+#         raise
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown"""
-    logger.info("Shutting down RAG-KG API server...")
-    try:
-        retrieval_system.close()
-        logger.info("Connections closed")
-    except Exception as e:
-        logger.error(f"Shutdown error: {str(e)}")
+# @app.on_event("shutdown")
+# async def shutdown_event():
+#     """Cleanup on shutdown"""
+#     logger.info("Shutting down RAG-KG API server...")
+#     try:
+#         retrieval_system.close()
+#         logger.info("Connections closed")
+#     except Exception as e:
+#         logger.error(f"Shutdown error: {str(e)}")
 
 if __name__ == "__main__":
     uvicorn.run(

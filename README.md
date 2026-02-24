@@ -214,10 +214,11 @@ black .
 flake8 .
 ```
 
-#### By me
+#### Important commands
 ```pwsh
 rag-kg-env/Scripts/activate
 python -m app.main
+powershell -ExecutionPolicy Bypass -File .\bundle_migration.ps1 -Mode Export
 ```
 
 ### Code Standards
