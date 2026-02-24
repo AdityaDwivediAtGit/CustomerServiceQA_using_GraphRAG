@@ -20,7 +20,37 @@ if ($Mode -eq "Export") {
 
     # 0. Pull Ollama Models
     Write-Host "[1/5] Ensuring Ollama models are pulled..." -ForegroundColor Yellow
-    $Models = @("llama2:7b-chat-q4_0", "mistral:7b-instruct-q4_0", "nomic-embed-text", "llama3.2:1b", "llama3.2:3b", "codellama:7b", "qwen2.5:7b")
+    # include a broad selection of powerful general and coding-focused models
+    # base set (fits in 16–32 GB RAM)
+    $Models = @(
+        "llama2:7b-chat-q4_0",          # general conversational
+        "mistral:7b-instruct-q4_0",     # instruction-tuned
+        "nomic-embed-text",            # embeddings
+        "llama3.2:1b",                  # smaller test model
+        "llama3.2:3b",
+        "codellama:7b",                 # code-focused
+        "qwen2.5:7b",
+        "code_llama:2-py",              # Python-optimized version
+        "wizardcoder:1.0",             # multi‑language coding wizard
+        "starcoder:15b",               # large open‑source code model
+        "mistral-coder:7b",            # Mistral’s coding variant
+        "codenlp:1.0"                  # research/analysis model
+    )
+
+    # high‑memory models (32‑64 GB RAM recommended)
+    $LargeModels = @(
+        "llama2:70b",                   # very large general model
+        "stanford-coder:34b",           # huge code model
+        "gptj-65b",                     # GPT-J style large model
+        "falcon:40b",                   # high performance large model
+        "mistral-xl:12b"                # extra-large variant (still heavy)
+    )
+    # merge lists so export pulls everything
+    $Models += $LargeModels
+    foreach ($m in $Models) {
+        Write-Host "Pulling $m..." -ForegroundColor Gray
+        docker exec ollama ollama pull $m
+    }
     foreach ($m in $Models) {
         Write-Host "Pulling $m..." -ForegroundColor Gray
         docker exec ollama ollama pull $m
@@ -42,14 +72,18 @@ if ($Mode -eq "Export") {
     docker pull alpine
     docker save -o "$ImagesDir/alpine.tar" alpine
     
+    # compute a host path that Docker can mount reliably on Windows and Unix
+    $hostVolumes = (Get-Location).ProviderPath
+    $hostBackup = Join-Path $hostVolumes $VolumesDir
+
     Write-Host "Backing up Neo4j volume..." -ForegroundColor Gray
-    docker run --rm -v neo4j_data:/data -v "${PWD}/$VolumesDir":/backup alpine tar cvf /backup/neo4j_data.tar /data
+    docker run --rm -v neo4j_data:/data -v "${hostBackup}:/backup" alpine tar cvf /backup/neo4j_data.tar /data
     
     Write-Host "Backing up Ollama volume..." -ForegroundColor Gray
-    docker run --rm -v ollama:/root/.ollama -v "${PWD}/$VolumesDir":/backup alpine tar cvf /backup/ollama.tar /root/.ollama
+    docker run --rm -v ollama:/root/.ollama -v "${hostBackup}:/backup" alpine tar cvf /backup/ollama.tar /root/.ollama
     
     Write-Host "Backing up Qdrant volume..." -ForegroundColor Gray
-    docker run --rm -v qdrant_storage:/qdrant/storage -v "${PWD}/$VolumesDir":/backup alpine tar cvf /backup/qdrant_storage.tar /qdrant/storage
+    docker run --rm -v qdrant_storage:/qdrant/storage -v "${hostBackup}:/backup" alpine tar cvf /backup/qdrant_storage.tar /qdrant/storage
 
     # 4. Copy Processed Data
     Write-Host "[5/5] Copying local data folders..." -ForegroundColor Yellow
