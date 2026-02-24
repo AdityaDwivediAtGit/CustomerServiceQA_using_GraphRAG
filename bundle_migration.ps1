@@ -70,6 +70,17 @@ if ($Mode -eq "Export") {
     docker save -o "$ImagesDir/ollama.tar" ollama/ollama
     docker save -o "$ImagesDir/qdrant.tar" qdrant/qdrant
 
+    # Recommendation: Stop containers before volume export for speed and consistency
+    Write-Host "Stopping containers before volume export..." -ForegroundColor Yellow
+    $containers = @("neo4j", "ollama", "qdrant")
+    foreach ($c in $containers) {
+        try {
+            docker stop $c 2>&1 | Write-Host
+        } catch {
+            Write-Warning "Failed to stop container $c: $_"
+        }
+    }
+
     # 3. Export Docker Volumes
     Write-Host "[4/5] Exporting Docker volumes..." -ForegroundColor Yellow
     # Note: We use a small alpine image to tar the volumes
