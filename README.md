@@ -58,8 +58,13 @@ curl -X POST http://localhost:8000/api/v1/query \
   `code_llama:2-py`, `wizardcoder:1.0`, `starcoder:15b`, `mistral-coder:7b`,
   `codellama:7b`, `qwen2.5:7b`, etc.  You may also add very large weights if you
   have 32 GB or 64 GB of RAM; examples include `llama2:70b`, `stanford-coder:34b`,
-  `falcon:40b`, `gptj-65b`, or `mistral-xl:12b`.  Modify `bundle_migration.ps1` or run
-  `docker exec ollama ollama pull <model>` to fetch additional models.
+  `falcon:40b`, `gptj-65b`, or `mistral-xl:12b`.  (Note that some names may not
+  exist in the Ollama registry yet; the script now skips missing manifests and
+  reports a warning.  In addition, any model whose tag appears to be larger than
+  10 GB — e.g. containing `15b`, `70b`, `40b`, etc. — is automatically filtered
+  out during export to avoid exceeding RAM limits.)  Modify
+  `bundle_migration.ps1` or run `docker exec ollama ollama pull <model>` to
+  fetch additional models.
 
   Note: when exporting Docker volumes on Windows, the path generation uses `Get-Location`
   to avoid empty backup directories (see `bundle_migration.ps1`).

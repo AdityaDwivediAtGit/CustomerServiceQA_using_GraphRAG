@@ -21,7 +21,7 @@ if ($Mode -eq "Export") {
     # 0. Pull Ollama Models
     Write-Host "[1/5] Ensuring Ollama models are pulled..." -ForegroundColor Yellow
     # include a broad selection of powerful general and coding-focused models
-    # base set (fits in 16–32 GB RAM)
+    # base set (fits in 16–32 GB RAM, all <10 GB size)
     $Models = @(
         "llama2:7b-chat-q4_0",          # general conversational
         "mistral:7b-instruct-q4_0",     # instruction-tuned
@@ -30,7 +30,8 @@ if ($Mode -eq "Export") {
         "llama3.2:3b",
         "codellama:7b",                 # code-focused
         "qwen2.5:7b",
-        "code_llama:2-py",              # Python-optimized version
+        # "code_llama:2-py",              # Python-optimized version
+        "codellama:7b-python",              # Python-optimized version
         "wizardcoder:1.0",             # multi‑language coding wizard
         "starcoder:15b",               # large open‑source code model
         "mistral-coder:7b",            # Mistral’s coding variant
@@ -47,13 +48,16 @@ if ($Mode -eq "Export") {
     )
     # merge lists so export pulls everything
     $Models += $LargeModels
-    foreach ($m in $Models) {
+    # explicit blacklist of patterns that indicate extremely large models
+    $blacklist = '70b|34b|65b|40b|xl'
+    $Selected = $Models | Where-Object { $_ -notmatch $blacklist }
+    foreach ($m in $Selected) {
         Write-Host "Pulling $m..." -ForegroundColor Gray
-        docker exec ollama ollama pull $m
-    }
-    foreach ($m in $Models) {
-        Write-Host "Pulling $m..." -ForegroundColor Gray
-        docker exec ollama ollama pull $m
+        try {
+            docker exec ollama ollama pull $m 2>&1 | Write-Host
+        } catch {
+            Write-Warning "Failed to pull $m (model may not exist or Ollama API error): $_"
+        }
     }
 
     # 1. Download Python Wheels
